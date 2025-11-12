@@ -1,9 +1,9 @@
 # Indoor air quality monitoring system
 
 ## Team & Contribution
-* X X (xxx)
+* X Ritschel (xxx)
 * Ivan Pavlov (Particulate sensor)
-* X X (xxx)
+* X Repáš (xxx)
 * Anton Panteleev (xxx)
 
 ## Project Overview
