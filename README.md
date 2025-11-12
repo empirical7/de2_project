@@ -2,7 +2,7 @@
 
 ## Team & Contribution
 * X X (xxx)
-* Ivan Pavlov (xxx) - Particulate sensor
+* Ivan Pavlov (Particulate sensor)
 * X X (xxx)
 * Anton Panteleev (xxx)
 
