@@ -3,7 +3,7 @@
 ## Team & Contribution
 * X Ritschel (xxx)
 * Ivan Pavlov (Particulate sensor)
-* X Repáš (xxx)
+* Matúš Repáš (Pressure sensor)
 * Anton Panteleev (xxx)
 
 ## Project Overview
