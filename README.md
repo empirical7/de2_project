@@ -15,7 +15,7 @@
 ## Components Used
 ### 1. Arduino UNO
 * Central controller for processing data from sensors and managing outputs.
-  
+  <img src="images/arduino_uno.png" alt="Arduino Uno" width="450" height="500">
 
 ## System Block Diagram
 
