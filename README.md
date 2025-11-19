@@ -27,7 +27,9 @@
 
 <img src="images/mq-5.png" alt="MQ-5" width="450" height="500">
 
+* DHT12 (Digital Temperature and Humidity Sensor)
 
+<img src="images/dht12.png" alt="DHT12" width="450" height="500">
 
 ## System Block Diagram
 
