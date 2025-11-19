@@ -21,8 +21,7 @@
   <img src="images/sharp.png" alt="Sharp" width="450" height="500">
 * MQ-5 (Gas Sensor)
 <img src="images/mq-5.png" alt="MQ-5" width="450" height="500">
-* MQ-5 (Gas Sensor)
-<img src="images/mq-5.png" alt="MQ-5" width="450" height="500">
+
 
 
 ## System Block Diagram
