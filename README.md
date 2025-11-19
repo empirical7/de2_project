@@ -17,8 +17,10 @@
 ### 1. Arduino UNO
 
 * Central controller for processing data from sensors and managing outputs.
+
   <img src="images/arduino_uno.png" alt="Arduino Uno" width="450" height="500">
 ### 2. Sensors:
+
 * Sharp GP2Y1010AU0F (Optical Dust Sensor)
 
   <img src="images/sharp.png" alt="Sharp" width="450" height="500">
@@ -30,6 +32,12 @@
 * DHT12 (Digital Temperature and Humidity Sensor)
 
 <img src="images/dht12.png" alt="DHT12" width="450" height="500">
+
+### 3. Output Devices:
+
+* OLED Display
+
+<img src="images/oled.png" alt="OLED" width="450" height="500">
 
 ## System Block Diagram
 
