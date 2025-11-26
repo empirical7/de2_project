@@ -57,6 +57,46 @@ Key functionalities include:
 
 * Dislapying information on an OLED display
 
+Function description:
+
+oled_setup()
+
+* Calls OLED initialization routines
+
+* Prints static text
+
+* Updates the dispaly buffer
+
+timer1_init()
+
+* Sets the timer prescaler and overflow period (1 sec)
+
+* Enable Timer1 overflow interrupt
+
+main()
+
+* Initializes TWI, OLED, TIMER1
+
+* Enable globar interrupts
+
+* Waits for flag_update_oled
+
+* Formats and prints temperature and humidity values to OLED
+
+* Updates the dispaly buffer
+
+* Infinite loop
+
+ISR(TIMER1_OVF_vect)
+
+* Counts timer overflows
+
+* Every 5 seconds reads 5 bytes from DHT12 via I2C
+
+* Stores them in dht12_values
+
+* Sets flag_update_oled to trigger update in main loop
+
 ## Possible Improvements
 
 
