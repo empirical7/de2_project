@@ -59,7 +59,7 @@ Key functionalities include:
 
 Function description:
 
-oled_setup()
+`oled_setup()`
 
 * Calls OLED initialization routines
 
@@ -67,13 +67,13 @@ oled_setup()
 
 * Updates the dispaly buffer
 
-timer1_init()
+`timer1_init()`
 
 * Sets the timer prescaler and overflow period (1 sec)
 
 * Enable Timer1 overflow interrupt
 
-main()
+`main()`
 
 * Initializes TWI, OLED, TIMER1
 
@@ -87,7 +87,7 @@ main()
 
 * Infinite loop
 
-ISR(TIMER1_OVF_vect)
+`ISR(TIMER1_OVF_vect)`
 
 * Counts timer overflows
 
