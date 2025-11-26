@@ -46,7 +46,12 @@
 
 
 ## Software Description
+The main.c file is written for a microcontroller and handles communication with several connected sensors and modules. It utilizes libraries for I2C (twi.h), OLED display control (oled.h), and timer management (timer.h).
+Key functionalities include:
 
+* Reading sensor's data
+
+* Dislapying information on an OLED display
 
 ## Possible Improvements
 
