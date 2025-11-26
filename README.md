@@ -4,7 +4,7 @@
 * X Ritschel (xxx)
 * Ivan Pavlov (Particulate sensor)
 * Matúš Repáš (Pressure sensor)
-* Anton Panteleev (xxx)
+* Anton Panteleev (Digital Temperature and Humidity Sensor, GitHub management)
 
 ## Project Overview
 
