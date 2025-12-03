@@ -33,6 +33,10 @@
 
 <img src="images/dht12.png" alt="DHT12" width="450" height="500">
 
+* MPL3115A2 (Digital barometric pressure, altitude and temperature sensor)
+
+<img src="images/altimeter.png" alt="ALTIMETER" width="450" height="500">
+
 ### 3. Output Devices:
 
 * OLED Display
