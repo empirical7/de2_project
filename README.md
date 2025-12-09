@@ -1,7 +1,7 @@
 # Indoor air quality monitoring system
 
 ## Team & Contribution
-* X Ritschel (Digital barometric pressure, altitude and temperature sensor)
+* Natan Ritschel (CO2 sensor)
 * Ivan Pavlov (Particulate sensor)
 * Matúš Repáš (Altitude sensor)
 * Anton Panteleev (Digital Temperature and Humidity Sensor, GitHub management)
