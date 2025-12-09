@@ -26,7 +26,8 @@
   <img src="images/sharp.png" alt="Sharp" width="450" height="500">
 
 * MQ-135 (Gas Sensor)
-
+  * This sensor is sensitive to heat and lots of other aspects as concentration of amonia, CO2, CO, acetone, toluene and alcohol
+  * To properly calibrate it needs to run at least for two hours straight (24 hours is recommended) 
 <img src="images/MQ-135.png" alt="MQ-135" width="450" height="500">
 
 * DHT12 (Digital Temperature and Humidity Sensor)
