@@ -81,7 +81,7 @@ Function description:
 `getCO2ppm()`
 * Converts raw analog input into particles per milion (ppm) of carbon dioxide in the air
   
-* This funcion uses ADC (analog-digital convertor) for reading the raw data
+* This funcion uses ADC (analog-digital convertor) for reading raw data
   
 * Samples the voltage on analog input and converts it into digital form
   
