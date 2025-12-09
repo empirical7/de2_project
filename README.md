@@ -77,15 +77,24 @@ Function description:
 
 * Enable Timer1 overflow interrupt
 
+`getCO2ppm()`
+* Converts raw analog input into particles per milion (ppm) of carbon dioxide in the air
+  
+* This funcion uses ADC (analog-digital convertor) for reading the raw data
+  
+* Samples the voltage on analog input and converts it into digital form
+  
+* Then it calculates ppm of CO2 in air using that data
+
 `main()`
 
-* Initializes TWI, OLED, TIMER1
+* Initializes TWI, OLED, TIMER1, ADC
 
 * Enable globar interrupts
 
 * Waits for flag_update_oled
 
-* Formats and prints temperature and humidity values to OLED
+* Formats and prints temperature,  humidity and CO2 values to OLED
 
 * Updates the dispaly buffer
 
