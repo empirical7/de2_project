@@ -27,7 +27,7 @@
 
 * MQ-135 (Gas Sensor)
 
-<img src="images/mq-5.png" alt="MQ-5" width="450" height="500">
+<img src="images/MQ-135.png" alt="MQ-135" width="450" height="500">
 
 * DHT12 (Digital Temperature and Humidity Sensor)
 
