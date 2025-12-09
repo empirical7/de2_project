@@ -81,11 +81,14 @@ void mode_altitude(void)
 }
 
 // CO2 calculation function 
+// Converts raw analog input into particles per milion (ppm for short)
 float getCO2ppm(void)
 {
     uint32_t sum = 0;
+    //Averaging samples using for cycle
     for (int i = 0; i < NUM_SAMPLES; i++)
     {
+        //adc_read function uses ADC to convert voltage on input to raw data 
         sum += adc_read(CO2_ADC_CH);
     }
 
@@ -93,10 +96,10 @@ float getCO2ppm(void)
 
     float V = raw * (5.0f / 1023.0f);
 
-    // Guard – 
+    // Guard – checking for unreliable data
     if (V < 0.1f || V > 4.9f)
         return 0.0f;
-
+    // calculation of CO2 in air out of raw data using voltage on analog input and calibration resistance R0
     float RS = (5.0f - V) * RL / V;
     float ratio = RS / R0;
 
@@ -324,4 +327,5 @@ int main(void)
 
     // Never reached
     return 0;
+
 }
