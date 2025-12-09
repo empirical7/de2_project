@@ -26,12 +26,11 @@
 #include <twi.h>
 
 // -- Defines --------------------------------------------------------
-#define SHORT_DELAY     40
-#define LONG_DELAY      280     // Sharp dust sensor on ADC0 (A0)
-
 // Sharp dust sensor LED pin (IR LED control)
 #define LED_PIN         PD2
 #define DUST_ADC_CH     0      // Sharp dust sensor on ADC0 (A0)
+#define SHORT_DELAY     40
+#define LONG_DELAY      280    // total 320us like in datasheet
 
 // CO2 sensor definitions
 #define CO2_ADC_CH      1      // CO2 sensor on ADC1 (A1)
@@ -58,7 +57,7 @@ int16_t altitude_m = 0;                 // latest altitude in meters
 
 // -- Functions ------------------------------------------------------
 
-// Altitude sensor to altitude mode (from твой кода)
+// Altitude sensor to altitude mode
 void mode_altitude(void)
 {
     twi_start();
@@ -204,65 +203,64 @@ int main(void)
     // Main loop
     while (1)
     {
-        // ---------- Измерение высоты (раз в 5 сек) ----------
+        // ---------- Measuring Altitude ----------
         if (flag_altitude)
         {
             flag_altitude = 0;
 
-            // Настраиваем сенсор и запускаем измерение
+            // Set altitude mode
             mode_altitude();
 
-            // Ждём завершения конверсии (как в твоём коде)
+            // Wait for measurement to complete
             _delay_ms(4000);
 
-            // Читаем 3 байта высоты с регистра 0x01
+            // Read Altitude data
             twi_readfrom_mem_into(ADD, ATD_REG, altitude_raw, 3);
 
+            // Calculate Altitude (20-bit value)
             int32_t tHeight = ((int32_t)altitude_raw[0] << 16) |
                               ((int32_t)altitude_raw[1] << 8)  |
                               (int32_t)altitude_raw[2];
 
-            tHeight >>= 4;                         // 20-битное значение
-            altitude_m = (int16_t)(tHeight / 16);  // делим по даташиту
+            tHeight >>= 4;                         
+            altitude_m = (int16_t)(tHeight / 16);  
 
             sprintf(uart_buffer, "Altitude: %d m\r\n", altitude_m);
             uart_puts(uart_buffer);
         }
 
-        // ---------- Раз в секунду: пыль + CO2 + OLED ----------
+        // ---------- Dust Temp and Hum Sensors & Display (Every 1 sec) ----------
         if (flag_update)
         {
             flag_update = 0;
 
-            // --- Пыль (Sharp dust sensor) ------------------------
+            // --- Sharp dust sensor ------------------------
 
-            // Включаем ИК-LED (active low)
+            // set LED on with delay
             gpio_write_low(&PORTD, LED_PIN);
             _delay_us(LONG_DELAY);
 
-            // Читаем ADC (канал пыли)
+            // Read ADC value 
             adc_value = adc_read(DUST_ADC_CH);
 
-            // Добиваем импульс до 320 мкс
+            // Wait remaining time and turn LED off
             _delay_us(SHORT_DELAY);
-
-            // Выключаем LED
             gpio_write_high(&PORTD, LED_PIN);
 
-            // Переводим вольты (Vref = 5 В, 10 bit ADC)
+            // Dust Calculation (U = 5 V, 10 bit ADC)
             voltage = adc_value * (5.0f / 1024.0f);
 
-            // Приблизительный расчёт dust density
+            // Dust Calculation
             if (voltage > 0.1f)
             {
-                dustDensity = 0.17f * voltage;   // коэффициент как у тебя
+                dustDensity = 0.17f * voltage;  
             }
             else
             {
                 dustDensity = 0.0f;
             }
 
-            dtostrf(dustDensity, 4, 2, dust_str);  // ширина 4, 2 знака
+            dtostrf(dustDensity, 4, 2, dust_str);  // width 4 and 2 decimal places
             dtostrf(voltage,    4, 2, volt_str);
 
             // --- CO2 (MQ sensor) ---------------------------------
@@ -271,61 +269,50 @@ int main(void)
             co2_dec = (int)((co2_ppm - (float)co2_int) * 100.0f);
             if (co2_dec < 0) co2_dec = -co2_dec;   // на всякий случай
 
-            // UART вывод
+            // UART output
             snprintf(uart_buffer, sizeof(uart_buffer),
                      "V: %s V | Dust: %s mg/m3 | CO2: %ld.%02d ppm\r\n",
                      volt_str, dust_str, co2_int, co2_dec);
             uart_puts(uart_buffer);
 
-            // --- OLED вывод ---------------------------------------
+            // --- OLED output ---------------------------------------
             oled_clrscr();
 
-            // Верхняя строка – название
             oled_gotoxy(0, 0);
-            oled_puts("Dust CO2 DHT Alt");
+            oled_puts("Air Quality System");
 
             // CO2
             oled_gotoxy(0, 1);
             sprintf(co2_str, "CO2:%ld.%02dppm", co2_int, co2_dec);
             oled_puts(co2_str);
 
-            // Напряжение
-            oled_gotoxy(0, 3);
-            sprintf(oled_buf, "V: %s V", volt_str);
-            oled_puts(oled_buf);
-
-            // Пыль
+            // Dust
             oled_gotoxy(0, 5);
             sprintf(oled_buf, "D: %s mg/m3", dust_str);
             oled_puts(oled_buf);
 
-            // DHT12: температура и влажность
+            // DHT12: Temp & Humidity
             oled_gotoxy(0, 2);
-            oled_puts("T[C]:");
-            oled_gotoxy(0, 4);
-            oled_puts("H[%]:");
+            oled_puts("T:");
+            oled_gotoxy(0, 3);
+            oled_puts("H:");
 
-            // Температура (байты 2 и 3)
-            oled_gotoxy(6, 2);
-            sprintf(dht_str, "%u.%u", dht12_values[2], dht12_values[3]);
+            // Temperature and Humidity values
+            oled_gotoxy(4, 2);
+            sprintf(dht_str, "%u.%u C", dht12_values[2], dht12_values[3]);
+            oled_puts(dht_str);
+            oled_gotoxy(4, 4);
+            sprintf(dht_str, "%u.%u %", dht12_values[0], dht12_values[1]);
             oled_puts(dht_str);
 
-            // Влажность (байты 0 и 1)
-            oled_gotoxy(6, 4);
-            sprintf(dht_str, "%u.%u", dht12_values[0], dht12_values[1]);
-            oled_puts(dht_str);
-
-            // Высота — последняя строка
+            // Altitude
             oled_gotoxy(0, 7);
             sprintf(oled_buf, "Alt: %d m", altitude_m);
             oled_puts(oled_buf);
 
-            // Вывод буфера на дисплей
+            // update display
             oled_display();
         }
     }
-
-    // Never reached
     return 0;
-
 }
