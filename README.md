@@ -47,6 +47,8 @@ The system demonstrates efficient integration of multiple sensor interfaces incl
 
 ## Wiring Diagram
 
+<img src="images/Schema.png" alt="SCHEMA">
+
 ## System Block Diagram
 
 ```mermaid
