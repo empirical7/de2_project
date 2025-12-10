@@ -48,22 +48,21 @@
 flowchart TD
     START([START])
     DEFVARS[Define global variables and flags]
-    INIT[Init UART, TWI, OLED, GPIO, ADC, Timer1]
+    INIT[Init UART / TWI / OLED / GPIO / ADC / Timer1]
     MAIN[[MAIN LOOP]]
-    ISR(((ISR TIMER1_OVF)))
+    ISR(((Timer1 overflow ISR)))
 
     START --> DEFVARS --> INIT --> MAIN
-    MAIN --> ISR
-    ISR --> MAIN
+    MAIN --> ISR --> MAIN
 
     MAIN --> ALT_CHECK{flag_altitude == 1?}
-    ALT_CHECK -->|yes| ALT_MEAS[Altitude measurement\nmode_altitude()\nwait 4 s\nread I2C\ncompute altitude_m\nUART print\nflag_altitude = 0]
+    ALT_CHECK -->|yes| ALT_MEAS[Altitude measurement<br/>set altitude mode<br/>delay 4 s<br/>read I2C<br/>compute altitude (m)<br/>UART print<br/>flag_altitude = 0]
     ALT_CHECK -->|no| UPDATE_CHECK
 
     ALT_MEAS --> UPDATE_CHECK
 
     UPDATE_CHECK{flag_update == 1?}
-    UPDATE_CHECK -->|yes| UPDATE[Air-quality update\nDust measurement\nCO2 via getCO2ppm()\nuse dht12_values\nUART log\nOLED redraw\nflag_update = 0]
+    UPDATE_CHECK -->|yes| UPDATE[Air quality update<br/>measure dust<br/>measure CO2<br/>use DHT12 data<br/>UART log<br/>OLED redraw<br/>flag_update = 0]
     UPDATE_CHECK -->|no| MAIN
     UPDATE --> MAIN
 ```
