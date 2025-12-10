@@ -245,7 +245,7 @@ voltage = adc_value * (5.0f / 1024.0f);
 Dust density:
 
 ```c
-dustDensity = (voltage > 0.1f) ? 0.17f * voltage : 0.0f;
+dustDensity = 0.17f * voltage;  
 ```
 
 ##### 3.2.2 CO₂ concentration
