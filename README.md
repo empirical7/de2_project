@@ -383,3 +383,6 @@ Screen refresh rate: **1 Hz**
 
 * [How to Interface With Optical Dust Sensor](https://www.instructables.com/How-to-Interface-With-Optical-Dust-Sensor/)
 
+* [AVR course at Brno University of Technology](https://github.com/tomas-fryza/avr-labs)
+
+* Open AI
