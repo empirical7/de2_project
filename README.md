@@ -49,8 +49,8 @@ flowchart TD
 
     A([START]) --> B[Define global variables and flags]
     B --> C[Init UART]
-    C --> D[Init I2C]
-    D --> E[Init OLED and print Init]
+    C --> D[Init I2C bus]
+    D --> E[Init OLED and show Init]
     E --> F[Configure dust LED pin as output]
     F --> G[Init ADC]
     G --> H[Init Timer1 overflow interval]
@@ -59,26 +59,27 @@ flowchart TD
 
     %% Main loop
     J --> K{flag_altitude == 1}
-    K -- Yes --> L[Reset flag_altitude\\nSet altitude mode\\nDelay 4s\\nRead altitude via I2C\\nCompute altitude_m\\nUART print]
+    K -- Yes --> L[Measure altitude and send over UART]
     K -- No --> M{flag_update == 1}
 
     L --> M
 
-    M -- Yes --> N[Reset flag_update]
-    N --> O[Measure dust\nTurn LED on\nDelay\nRead ADC0\nTurn LED off\nCompute dust density]
-    O --> P[Measure CO2\nRead ADC1\nAverage samples\nCompute ppm]
-    P --> Q[UART print: voltage dust CO2]
-    Q --> R[Update OLED: CO2 dust temp humidity altitude]
+    M -- Yes --> N[Measure dust on ADC0]
+    N --> O[Measure CO2 on ADC1]
+    O --> P[Format values for UART]
+    P --> Q[Send values over UART]
+    Q --> R[Update OLED with dust CO2 temp hum altitude]
     R --> J
 
     M -- No --> J
 
     %% Timer1 ISR
-    S[[ISR Timer1 overflow]] --> T[Set flag_update\nIncrease counter]
+    S[[ISR Timer1 overflow]] --> T[Set flag_update and increase counter]
     T --> U{counter >= 5}
-    U -- No --> V[Exit ISR] --> J
-    U -- Yes --> W[Reset counter\nRead DHT12 values\nSet flag_altitude]
+    U -- No --> V[Exit ISR]
+    U -- Yes --> W[Read DHT12 values and set flag_altitude]
     W --> V
+    V --> J
 
 ```
 
