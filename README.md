@@ -54,62 +54,287 @@
 
 ## Software Description
 
-The main.c file is written for a microcontroller and handles communication with several connected sensors and modules. It utilizes libraries for I2C (twi.h), OLED display control (oled.h), and timer management (timer.h).
+## Software
 
-Key functionalities include:
+The firmware is written in bare-metal C for the ATmega328P (Arduino Uno, 16 MHz).  
+It combines several environmental sensors into a single air-quality monitoring node:
 
-* Reading sensor's data
+* Sharp optical dust sensor on **ADC0** with IR LED timing control on **PD2**
+* CO₂ sensor on **ADC1**, read via ADC and converted to ppm
+* DHT12 temperature & humidity sensor over **I²C (0x5C)**
+* Altitude sensor over **I²C (0x60)**
+* SSD1306 OLED display over **I²C**
+* UART at **115200 baud** for debug output
 
-* Dislapying information on an OLED display
+Time behaviour is driven by **Timer1 overflow interrupts**:
 
-Function description:
+* every **1 second** → Dust + CO₂ + DHT12 + OLED update  
+* every **5 seconds** → Altitude update  
 
-`oled_setup()`
+The main loop is fully blocking but reacts only to flags set by the timer ISR.
 
-* Calls OLED initialization routines
+---
 
-* Prints static text
+### 1. System initialisation
 
-* Updates the dispaly buffer
+At power-up the firmware configures communication peripherals, display, ADC and timer:
 
-`timer1_init()`
+```c
+int main(void)
+{
+    uart_init(UART_BAUD_SELECT(115200, F_CPU));
+    twi_init();
 
-* Sets the timer prescaler and overflow period (1 sec)
+    oled_init(OLED_DISP_ON);
+    oled_clrscr();
+    oled_charMode(NORMALSIZE);
+    oled_gotoxy(0, 0);
+    oled_puts("Dust+CO2+DHT+Alt");
+    oled_gotoxy(0, 2);
+    oled_puts("Init...");
+    oled_display();
 
-* Enable Timer1 overflow interrupt
+    gpio_mode_output(&DDRD, LED_PIN);
+    gpio_write_high(&PORTD, LED_PIN);   // LED off (active low)
 
-`getCO2ppm()`
-* Converts raw analog input into particles per milion (ppm) of carbon dioxide in the air
-  
-* This funcion uses ADC (analog-digital convertor) for reading raw data
-  
-* Samples the voltage on analog input and converts it into digital form
-  
-* Then it calculates ppm of CO2 in air using that data
+    adc_init();
 
-`main()`
+    tim1_ovf_1sec();
+    tim1_ovf_enable();
 
-* Initializes TWI, OLED, TIMER1, ADC
+    sei();   // global interrupts
+}
+```
 
-* Enable globar interrupts
+Initial UART message:
 
-* Waits for flag_update_oled
+```c
+uart_puts("Optical Dust + CO2 + DHT12 + Alt sensor started\r\n");
+```
 
-* Formats and prints temperature,  humidity and CO2 values to OLED
+---
 
-* Updates the dispaly buffer
+### 2. Timer-based measurement scheduler
 
-* Infinite loop
+Periodic measurements are triggered by Timer1 overflow:
 
-`ISR(TIMER1_OVF_vect)`
+```c
+ISR(TIMER1_OVF_vect)
+{
+    static uint8_t n_ovfs = 0;
 
-* Counts timer overflows
+    flag_update = 1;       // every 1 second
+    n_ovfs++;
 
-* Every 5 seconds reads 5 bytes from DHT12 via I2C
+    if (n_ovfs >= 5)
+    {
+        n_ovfs = 0;
 
-* Stores them in dht12_values
+        twi_readfrom_mem_into(DHT_ADR, DHT_HUM_MEM, dht12_values, 5);
+        flag_altitude = 1; // every 5 seconds
+    }
+}
+```
 
-* Sets flag_update_oled to trigger update in main loop
+Two volatile flags coordinate the workflow:
+
+* `flag_update` – 1 s cycle: dust, CO₂, DHT12 values and OLED update  
+* `flag_altitude` – 5 s cycle: altitude measurement and UART print  
+
+Time-critical operations occur inside or are triggered by the ISR.
+
+---
+
+### 3. Main measurement cycle
+
+The main loop alternates between two tasks:
+
+```c
+while (1)
+{
+    if (flag_altitude) { ... }
+    if (flag_update)  { ... }
+}
+```
+
+#### 3.1 Altitude measurement (every 5 s)
+
+When `flag_altitude` is set:
+
+* Sensor is switched into altitude mode  
+* Conversion delay of 4 seconds  
+* 3 altitude bytes are read via I²C  
+* 20-bit altitude value is decoded and converted to meters  
+
+```c
+if (flag_altitude)
+{
+    flag_altitude = 0;
+
+    mode_altitude();
+    _delay_ms(4000);
+
+    twi_readfrom_mem_into(ADD, ATD_REG, altitude_raw, 3);
+
+    int32_t tHeight = ((int32_t)altitude_raw[0] << 16) |
+                      ((int32_t)altitude_raw[1] << 8)  |
+                       (int32_t)altitude_raw[2];
+
+    tHeight >>= 4;
+    altitude_m = (int16_t)(tHeight / 16);
+
+    sprintf(uart_buffer, "Altitude: %d m\r\n", altitude_m);
+    uart_puts(uart_buffer);
+}
+```
+
+---
+
+#### 3.2 Dust, CO₂, temperature, humidity and OLED update (every 1 s)
+
+##### 3.2.1 Dust sensor (Sharp GP2Y)
+
+Precise IR LED timing:
+
+```c
+gpio_write_low(&PORTD, LED_PIN);   // LED ON
+_delay_us(LONG_DELAY);
+
+adc_value = adc_read(DUST_ADC_CH);
+
+_delay_us(SHORT_DELAY);
+gpio_write_high(&PORTD, LED_PIN);  // LED OFF
+```
+
+Voltage conversion:
+
+```c
+voltage = adc_value * (5.0f / 1024.0f);
+```
+
+Dust density:
+
+```c
+dustDensity = (voltage > 0.1f) ? 0.17f * voltage : 0.0f;
+```
+
+##### 3.2.2 CO₂ concentration
+
+`getCO2ppm()` processes ADC1 readings:
+
+```c
+float getCO2ppm(void)
+{
+    uint32_t sum = 0;
+
+    for (int i = 0; i < NUM_SAMPLES; i++)
+        sum += adc_read(CO2_ADC_CH);
+
+    uint16_t raw = (uint16_t)(sum / NUM_SAMPLES);
+    float V = raw * (5.0f / 1023.0f);
+
+    if (V < 0.1f || V > 4.9f)
+        return 0.0f;
+
+    float RS = (5.0f - V) * RL / V;
+    float ratio = RS / R0;
+
+    return 40.0f * powf(ratio, -2.77f);
+}
+```
+
+Formatting:
+
+```c
+co2_ppm = getCO2ppm();
+co2_int = (long)co2_ppm;
+co2_dec = abs((int)((co2_ppm - (float)co2_int) * 100.0f));
+```
+
+##### 3.2.3 DHT12 values
+
+The ISR fills:
+
+* `dht12_values[0]` – RH integer  
+* `dht12_values[1]` – RH decimal  
+* `dht12_values[2]` – temperature integer  
+* `dht12_values[3]` – temperature decimal  
+
+Formatted for display:
+
+```c
+sprintf(dht_str, "%u.%u C", dht12_values[2], dht12_values[3]);
+sprintf(dht_str, "%u.%u %%", dht12_values[0], dht12_values[1]);
+```
+
+##### 3.2.4 UART output
+
+```c
+snprintf(uart_buffer, sizeof(uart_buffer),
+         "V: %s V | Dust: %s mg/m3 | CO2: %ld.%02d ppm\r\n",
+         volt_str, dust_str, co2_int, co2_dec);
+uart_puts(uart_buffer);
+```
+
+---
+
+### 4. UI rendering on OLED
+
+The OLED is used as a simple dashboard:
+
+```c
+oled_clrscr();
+oled_puts("Air Quality System");
+
+sprintf(co2_str, "CO2:%ld.%02dppm", co2_int, co2_dec);
+oled_puts(co2_str);
+
+sprintf(oled_buf, "D: %s mg/m3", dust_str);
+oled_puts(oled_buf);
+
+sprintf(dht_str, "%u.%u C", dht12_values[2], dht12_values[3]);
+oled_puts(dht_str);
+
+sprintf(dht_str, "%u.%u %%", dht12_values[0], dht12_values[1]);
+oled_puts(dht_str);
+
+sprintf(oled_buf, "Alt: %d m", altitude_m);
+oled_puts(oled_buf);
+
+oled_display();
+```
+
+Layout:
+
+* Title  
+* CO₂ value  
+* Temperature  
+* Humidity  
+* Dust concentration  
+* Altitude  
+
+Screen refresh rate: **1 Hz**
+
+---
+
+### 5. Design characteristics
+
+* **Timer-driven sampling**  
+  Strict 1 s and 5 s intervals based on Timer1 overflow flags.
+
+* **Precise dust sensor LED timing**  
+  Required microsecond accuracy for Sharp GP2Y.
+
+* **Floating-point calculations**  
+  Used for CO₂ power-law calibration and dust-density conversion.
+
+* **Modular structure**  
+  Sensor interfaces (ADC, TWI), scheduler (Timer1 ISR), computing (getCO2ppm), and UI (OLED) are separated.
+
+* **Single consolidated screen**  
+  All environmental parameters visible simultaneously without navigation.
+
+
 
 ## Possible Improvements
 
