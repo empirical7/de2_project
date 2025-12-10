@@ -364,9 +364,8 @@ Screen refresh rate: **1 Hz**
 * **Single consolidated screen**  
   All environmental parameters visible simultaneously without navigation.
 
+## Project Poster
 
-
-## Possible Improvements
 
 
 ## Resources and References
