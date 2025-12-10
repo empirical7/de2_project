@@ -139,25 +139,6 @@ int main(void)
     // I2C init (DHT12, OLED, altitude sensor)
     twi_init();
 
-    // I2C scan
-    char uart_msg[20];
-    uart_puts("Scanning I2C... ");
-    for (uint8_t sla = 0; sla < 128; sla++)
-    {
-        if (twi_test_address(sla) == 0)
-        {
-            sprintf(uart_msg, "0x%x ", sla);
-            uart_puts(uart_msg);
-        }
-    }
-    uart_puts("Done\r\n");
-
-    if (twi_test_address(ADD) != 0)
-    {
-        uart_puts("[ERROR] Altitude sensor not detected\r\n");
-        
-    }
-
     // OLED init
     oled_init(OLED_DISP_ON);
     oled_clrscr();
@@ -329,4 +310,5 @@ int main(void)
         }
     }
     return 0;
+
 }
