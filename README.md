@@ -379,4 +379,4 @@ Screen refresh rate: **1 Hz**
 
 ## Resources and References
 
-* datasheet
+* <img src="resources/datasheet of optical dust sensor.pdf" alt="Datasheet of optical dust sensor">
