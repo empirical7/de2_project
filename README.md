@@ -40,6 +40,8 @@
 
 <img src="images/oled.png" alt="OLED" width="450" height="500">
 
+## Wiring Diagram
+
 ## System Block Diagram
 
 ```mermaid
