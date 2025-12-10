@@ -248,7 +248,7 @@ int main(void)
             co2_ppm = getCO2ppm();
             co2_int = (long)co2_ppm;
             co2_dec = (int)((co2_ppm - (float)co2_int) * 100.0f);
-            if (co2_dec < 0) co2_dec = -co2_dec;   // на всякий случай
+            if (co2_dec < 0) co2_dec = -co2_dec;
 
             // UART output
             snprintf(uart_buffer, sizeof(uart_buffer),
@@ -297,4 +297,5 @@ int main(void)
     }
     return 0;
 }
+
 
