@@ -385,4 +385,6 @@ Screen refresh rate: **1 Hz**
 
 * [AVR course at Brno University of Technology](https://github.com/tomas-fryza/avr-labs)
 
+* [Datasheet of Gas Sensor](resources/MQ-135_datasheet.pdf)
+
 * Open AI
