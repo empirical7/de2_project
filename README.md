@@ -48,13 +48,7 @@
 
 <img src="images/block_diagram.png" alt="BLOCK">
 
-## How It Works
-
-
-
 ## Software Description
-
-## Software
 
 The firmware is written in bare-metal C for the ATmega328P (Arduino Uno, 16 MHz).  
 It combines several environmental sensors into a single air-quality monitoring node:
