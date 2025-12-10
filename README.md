@@ -46,25 +46,40 @@
 
 ```mermaid
 flowchart TD
-    START([START])
-    DEFVARS[Define global variables and flags]
-    INIT[Init UART / TWI / OLED / GPIO / ADC / Timer1]
-    MAIN[[MAIN LOOP]]
-    ISR(((Timer1 overflow ISR)))
 
-    START --> DEFVARS --> INIT --> MAIN
-    MAIN --> ISR --> MAIN
+    A([START]) --> B[Define global variables and flags]
+    B --> C[Init UART]
+    C --> D[Init I2C]
+    D --> E[Init OLED and print Init]
+    E --> F[Configure dust LED pin as output]
+    F --> G[Init ADC]
+    G --> H[Init Timer1 overflow interval]
+    H --> I[Enable global interrupts]
+    I --> J[[MAIN LOOP]]
 
-    MAIN --> ALT_CHECK{flag_altitude == 1?}
-    ALT_CHECK -->|yes| ALT_MEAS[Altitude measurement<br/>set altitude mode<br/>delay 4 s<br/>read I2C<br/>compute altitude (m)<br/>UART print<br/>flag_altitude = 0]
-    ALT_CHECK -->|no| UPDATE_CHECK
+    %% Main loop
+    J --> K{flag_altitude == 1}
+    K -- Yes --> L[Reset flag_altitude\nSet altitude mode\nDelay 4s\nRead altitude via I2C\nCompute altitude_m\nUART print]
+    K -- No --> M{flag_update == 1}
 
-    ALT_MEAS --> UPDATE_CHECK
+    L --> M
 
-    UPDATE_CHECK{flag_update == 1?}
-    UPDATE_CHECK -->|yes| UPDATE[Air quality update<br/>measure dust<br/>measure CO2<br/>use DHT12 data<br/>UART log<br/>OLED redraw<br/>flag_update = 0]
-    UPDATE_CHECK -->|no| MAIN
-    UPDATE --> MAIN
+    M -- Yes --> N[Reset flag_update]
+    N --> O[Measure dust\nTurn LED on\nDelay\nRead ADC0\nTurn LED off\nCompute dust density]
+    O --> P[Measure CO2\nRead ADC1\nAverage samples\nCompute ppm]
+    P --> Q[UART print: voltage dust CO2]
+    Q --> R[Update OLED: CO2 dust temp humidity altitude]
+    R --> J
+
+    M -- No --> J
+
+    %% Timer1 ISR
+    S[[ISR Timer1 overflow]] --> T[Set flag_update\nIncrease counter]
+    T --> U{counter >= 5}
+    U -- No --> V[Exit ISR] --> J
+    U -- Yes --> W[Reset counter\nRead DHT12 values\nSet flag_altitude]
+    W --> V
+
 ```
 
 
