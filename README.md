@@ -379,4 +379,4 @@ Screen refresh rate: **1 Hz**
 
 ## Resources and References
 
-*
+* datasheet
