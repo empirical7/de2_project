@@ -8,6 +8,11 @@
 
 ## Project Overview
 
+This project implements an indoor air-quality monitoring system based on the ATmega328P (Arduino Uno).
+The device continuously measures particulate concentration (dust), CO₂ level, temperature, humidity and altitude, using a combination of analog and digital sensors. All data is processed in real time and displayed on an OLED screen, while detailed measurements are sent over UART for debugging or logging.
+
+The system demonstrates efficient integration of multiple sensor interfaces including ADC, I²C and GPIO timing control.
+
 ## Components Used
 
 ### 1. Arduino UNO
