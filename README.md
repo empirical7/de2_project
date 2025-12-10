@@ -366,7 +366,7 @@ Screen refresh rate: **1 Hz**
 
 ## Project Poster
 
-
+<img src="images/Indoor Air Quality System.png" alt="POSTER" width="450" height="500">
 
 ## Resources and References
 
