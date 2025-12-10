@@ -42,8 +42,6 @@
 
 ## System Block Diagram
 
-<img src="images/block_diagram.png" alt="BLOCK">
-
 ```mermaid
 flowchart TD
 
