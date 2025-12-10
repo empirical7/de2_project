@@ -236,6 +236,8 @@ _delay_us(SHORT_DELAY);
 gpio_write_high(&PORTD, LED_PIN);  // LED OFF
 ```
 
+<img src="images/1sec.png" alt="SEC">
+
 Voltage conversion:
 
 ```c
