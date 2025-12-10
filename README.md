@@ -59,7 +59,7 @@ flowchart TD
 
     %% Main loop
     J --> K{flag_altitude == 1}
-    K -- Yes --> L[Reset flag_altitude\nSet altitude mode\nDelay 4s\nRead altitude via I2C\nCompute altitude_m\nUART print]
+    K -- Yes --> L[Reset flag_altitude\\nSet altitude mode\\nDelay 4s\\nRead altitude via I2C\\nCompute altitude_m\\nUART print]
     K -- No --> M{flag_update == 1}
 
     L --> M
